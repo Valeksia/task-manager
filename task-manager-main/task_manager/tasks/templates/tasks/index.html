@@ -1,0 +1,101 @@
+{% extends "tasks/layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <h3 class="text-center">Управляй своим временем</h3>
+      <form class="ui form" action="{% url 'tasks:add' %}" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="title">Новая задача</label>
+          <input type="text" class="form-control" id="title" name="title" placeholder="Введите задачу">
+        </div>
+        <div class="form-group">
+          <label for="deadline">Срок выполнения</label>
+          <input type="date" class="form-control" id="deadline" name="deadline">
+        </div>
+        <div class="form-group">
+          <label for="priority">Приоритет</label>
+          <select class="form-control" id="priority" name="priority">
+                <option value="1" {% if todo.priority == 1 %}selected{% endif %}>Важно</option>
+                <option value="2" {% if todo.priority == 2 %}selected{% endif %}>Средней важности</option>
+                <option value="3" {% if todo.priority == 3 %}selected{% endif %}>Незначительно</option>
+          </select>
+        </div>
+        <button class="btn btn-dark" type="submit">Добавить</button>
+      </form>
+
+      <h2 class="mt-4 text-center">Текущие задачи</h2>
+     <ul class="list-group">
+  {% for todo in todo_list %}
+    {% if not todo.is_complete %}
+      <li class="list-group-item">
+        <strong>{{ todo.title }}</strong><br>
+        Срок выполнения: {{ todo.deadline|date }}<br>
+        Приоритет: {{ todo.priority }}
+        <span class="badge badge-dark">Не завершено</span>
+        <a href="{% url 'tasks:update' todo_id=todo.id %}" class="btn btn-dark">Выполнено</a>
+        <a href="{% url 'tasks:delete' todo_id=todo.id %}" class="btn btn-dark">Удалить</a>
+        <button class="btn btn-dark" data-toggle="modal" data-target="#editModal{{ todo.id }}">Редактировать</button>
+
+        <!-- Модальная форма редактирования -->
+        <div class="modal fade" id="editModal{{ todo.id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Редактировать задачу</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form method="post" action="{% url 'tasks:edit' todo_id=todo.id %}">
+                  {% csrf_token %}
+                  <div class="form-group">
+                    <label for="title">Название задачи</label>
+                    <input type="text" class="form-control" id="title" name="title" value="{{ todo.title }}">
+                  </div>
+                  <div class="form-group">
+                    <label for="deadline">Срок выполнения</label>
+                    <input type="date" class="form-control" id="deadline" name="deadline" value="{{ todo.deadline|date }}">
+                  </div>
+                  <div class="form-group">
+                    <label for="priority">Приоритет</label>
+                    <select class="form-control" id="priority" name="priority">
+                        <option value="1" {% if todo.priority == 1 %}selected{% endif %}>Важно</option>
+                        <option value="2" {% if todo.priority == 2 %}selected{% endif %}>Средней важности</option>
+                        <option value="3" {% if todo.priority == 3 %}selected{% endif %}>Незначительно</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-dark">Сохранить</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </li>
+    {% endif %}
+  {% endfor %}
+</ul>
+
+      <h2 class="mt-4 text-center">Завершенные задачи</h2>
+      <ul class="list-group">
+        {% for todo in todo_list %}
+          {% if todo.is_complete %}
+            <li class="list-group-item">
+              <strong>{{ todo.title }}</strong><br>
+              Срок выполнения: {{ todo.deadline|date }}<br>
+              Приоритет: {{ todo.priority }}
+              <span class="badge badge-dark">Завершено</span>
+              <a href="{% url 'tasks:update' todo_id=todo.id %}" class="btn btn-dark">Возобновить</a>
+              <a href="{% url 'tasks:delete' todo_id=todo.id %}" class="btn btn-dark">Удалить</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock content %}
